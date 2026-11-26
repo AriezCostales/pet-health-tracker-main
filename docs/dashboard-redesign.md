@@ -21,26 +21,26 @@ status-tinted metrics, compact panels, and a branded navigation rail.
   panel style. Page gutters, input borders, focus feedback, typography, status
   colors, and motion are defined centrally.
 - Phone layouts retain the bottom navigation, pet carousel, portrait detail
-  sheet, and touch interactions. A compact summary follows the existing Home
-  content on phones.
+  sheet, and touch interactions. Home itself serves as the mobile summary.
 
 ## How it adapts
 
-| Logical width | Navigation | Content |
-| --- | --- | --- |
-| Below 640 px | Bottom bar and raised Quick actions button | Phone layout with touch forms and a compact summary |
-| 640–1023 px | 72 px icon rail | Constrained body and centered dialogs. Panels stack when their content area is narrow |
-| 1024–1279 px | 72 px rail by default. Expand manually | Dashboard and appointment columns reflow around the sidebar |
-| 1280–1535 px | 232 px expanded sidebar by default. Collapse manually | More room for side-by-side panels and grouped lists |
-| 1536 px and above | Same expanded sidebar and manual toggle | Wider gutters with the content capped at 1380 px |
+The host platform selects the Flutter layout. Desktop browsers and native
+desktop builds use the desktop dashboard. Android and iOS devices use the
+mobile layout, including their browsers when Flutter identifies the mobile
+host platform.
 
-`AppLayout` reads logical width from `MediaQuery`. `LayoutBuilder` checks how
-much space is left after navigation and padding. The dashboard summary fits
-four, two, or one tile per row and also considers text scale. Wider pages use
-`PageContent` and `AdaptiveColumns` to cap line length and reflow each panel.
-The same `StatefulShellRoute.indexedStack` stays mounted across width changes.
-An open form retains its current route and inputs during resize, and newly
-opened forms use the current width.
+| Desktop window width | Navigation |
+| --- | --- |
+| Below 640 px | The desktop toolbar opens a navigation drawer |
+| 640–1023 px | 72 px icon rail |
+| 1024–1279 px | Icon rail by default, with a manual expansion option |
+| 1280 px and above | 232 px expanded sidebar by default, with a manual collapse option |
+
+At 1536 px the desktop layout uses wider gutters. The content is capped at
+1380 px. `LayoutBuilder` uses the actual available width to reflow cards and
+panels. The router and controllers stay mounted, so navigation, filters, and
+form drafts survive resizing.
 
 Use **Tab** and **Shift+Tab** to move between controls, **Alt+1–4** to switch
 sections, **Ctrl+N** or **Cmd+N** for Quick actions, and **Esc** to dismiss a
@@ -75,27 +75,15 @@ setup and release build commands.
 | Tests | Modified `test/app/adaptive_app_test.dart`, `test/data/repositories_test.dart`, and `test/features/journal/journal_screen_test.dart` |
 | Docs | Modified `AGENTS.md`, `README.md`, and `docs/adaptive-desktop.md`. Added `docs/dashboard-redesign.md` and screenshots in `docs/previews/` |
 
-## Screenshots
+## Previous redesign screenshots
 
-The screenshots use the built-in sample household.
+The images in `previews/` illustrate the original dashboard redesign. They
+predate the platform-specific layout changes described above.
 
-| Preview | Viewport |
-| --- | --- |
-| [Desktop dashboard](previews/dashboard-desktop.png) | 1440 × 900 |
-| [Tablet dashboard](previews/dashboard-tablet.png) | 768 × 1024 |
-| [Phone Home](previews/dashboard-phone.png) | 390 × 844 |
-| [Desktop journal](previews/journal-desktop.png) | 1440 × 900 |
-| [Desktop Quick actions](previews/quick-actions-desktop.png) | 1440 × 900 |
+## Layout revision verification
 
-## Verification
-
-| Check | Result |
-| --- | --- |
-| `flutter analyze --no-pub` | Zero issues |
-| `flutter test --no-pub --reporter expanded` | 201 VM tests, including the checkout's SQLite repository and widget suites |
-| `flutter build web --release --no-pub --no-web-resources-cdn` | Release build succeeded |
-| Requested viewports | 375 × 812, 390 × 844, 768 × 1024, 1024 × 768, 1280 × 720, 1366 × 768, 1440 × 900, 1920 × 1080, and 2560 × 1440 exercised in Flutter widgets and Chromium |
-| Extra resize coverage | Intermediate widths around 640, 1024, 1280, and 1536 px, a short 820 × 390 viewport, and a rapid sequence of resizes that crosses the navigation breakpoints |
-| Chromium release smoke test | Verified sidebar collapse and expansion, all four sections, journal filtering across resize, a booking draft through resize, saving the visit, and finding it again after an IndexedDB reload. The checked viewports had no horizontal page scroll |
-| Standalone `flutter test --platform chrome test/web/web_boot_test.dart` | The runner did not initially serve the SQLite WebAssembly asset. It timed out after the file was staged at the requested test path. The release build served SQLite normally in Chromium |
-| Native devices | Native Windows builds and file picking still need a Windows machine. Android, iOS, and macOS device launches, OS window tiling, and browser-specific zoom controls were outside the environment used here |
+Flutter 3.47.5 analysis reported zero issues and all 202 VM tests passed.
+The tests cover desktop resizing, drawer navigation, retained filters and
+booking drafts, and bottom navigation without an extra summary on mobile.
+The web release build succeeded and Chromium verified desktop navigation
+and route retention across a live resize. Native devices were not run.

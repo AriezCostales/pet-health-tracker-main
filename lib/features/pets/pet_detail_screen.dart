@@ -176,7 +176,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool wide = AppLayout.isWide(context);
+    final bool wide = AppLayout.usesDesktopLayout(context);
     return Scaffold(
       appBar: wide
           ? AppBar(

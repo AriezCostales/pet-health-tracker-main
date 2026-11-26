@@ -248,9 +248,10 @@ Date/number labels: `lib/ui/format/app_formats.dart` (`formatDayMonth`,
   use that to refresh. Writes made in another tab therefore show up without a
   manual pull-to-refresh.
 - `Routes` holds every path/name — never hard-code route strings in a screen.
-- Feature screens are full `Scaffold`s. The shell provides the bottom bar on
-  phones, a navigation rail on tablets, and a collapsible sidebar on desktop.
-  Wide sections use the shell toolbar. The pet detail route has its own toolbar.
+- Feature screens are full `Scaffold`s. Mobile platforms use the bottom bar.
+  Desktop platforms and desktop browsers use the workspace toolbar and side
+  navigation. Narrow desktop windows expose navigation through a drawer.
+  The pet detail route has its own toolbar.
   Use `lib/ui/layout/adaptive_layout.dart` for shared window and column rules.
 - Open forms through `showAppSheet` so the same stateful form is presented as a
   bottom sheet on phones and a dialog on wider windows.

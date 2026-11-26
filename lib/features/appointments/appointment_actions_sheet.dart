@@ -16,6 +16,7 @@ import '../../ui/kit/app_sheet.dart';
 import '../../ui/kit/list_row.dart';
 import '../../ui/kit/primary_button.dart';
 import '../../ui/kit/section_label.dart';
+import '../../ui/layout/adaptive_layout.dart';
 import '../../ui/theme/app_theme.dart';
 import 'appointment_cancel_sheet.dart';
 import 'appointment_reschedule_sheet.dart';
@@ -148,9 +149,13 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
     final Appointment appointment = widget.appointment;
     final String petLabel = widget.controller.petLabelFor(appointment.petId);
     return AppSheetBody(
-      // No horizontal padding here: the action rows paint their press state to
-      // the sheet's edges, and the text gets its own 20 px inset below.
-      padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
+      // Dialogs have no drag handle above the visit header.
+      padding: EdgeInsets.only(
+        top: AppLayout.usesDesktopLayout(context)
+            ? AppSpacing.lg
+            : AppSpacing.xs,
+        bottom: AppSpacing.xl,
+      ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -214,9 +219,7 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xl,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisSize: MainAxisSize.min,
@@ -229,9 +232,7 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     PrimaryButton(
-                      key: const ValueKey<String>(
-                        'appointment-actions-close',
-                      ),
+                      key: const ValueKey<String>('appointment-actions-close'),
                       label: 'Close',
                       onPressed: () => Navigator.of(context).pop(),
                     ),
@@ -340,15 +341,11 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
                 ),
               const SizedBox(height: AppSpacing.lg),
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xl,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                 child: SecondaryButton(
                   key: const ValueKey<String>('appointment-actions-dismiss'),
                   label: 'Keep as is',
-                  onPressed: _isBusy
-                      ? null
-                      : () => Navigator.of(context).pop(),
+                  onPressed: _isBusy ? null : () => Navigator.of(context).pop(),
                 ),
               ),
             ],

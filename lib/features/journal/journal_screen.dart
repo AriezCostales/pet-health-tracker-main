@@ -99,7 +99,7 @@ class _JournalScreenState extends State<JournalScreen> {
     final JournalController controller = _controller!;
     return Scaffold(
       appBar:
-          AppLayout.isWide(context) &&
+          AppLayout.usesDesktopLayout(context) &&
               AppShellSelection.maybeOf(context) != null
           ? null
           : AppBar(title: const Text('Journal')),
@@ -143,7 +143,7 @@ class _JournalBody extends StatelessWidget {
       controller.visibleEntries,
       controller.localToday,
     );
-    final bool wide = AppLayout.isWide(context);
+    final bool wide = AppLayout.usesDesktopLayout(context);
     final Widget petFilter = _JournalPetFilterRow(controller: controller);
     final List<Widget> children = <Widget>[
       if (wide)
@@ -267,7 +267,7 @@ class _JournalPetFilterRow extends StatelessWidget {
     }
     return Padding(
       padding: EdgeInsets.only(
-        bottom: AppLayout.isWide(context) ? 0 : AppSpacing.md,
+        bottom: AppLayout.usesDesktopLayout(context) ? 0 : AppSpacing.md,
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,

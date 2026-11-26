@@ -6,7 +6,9 @@ import 'package:pet_health_tracker/app/shell/app_shell.dart';
 import 'package:pet_health_tracker/app/shell/wide_navigation.dart';
 import 'package:pet_health_tracker/domain/models/journal_entry.dart';
 import 'package:pet_health_tracker/features/pets/pet_routes.dart';
+import 'package:pet_health_tracker/features/home/widgets/dashboard_summary.dart';
 import 'package:pet_health_tracker/ui/layout/adaptive_layout.dart';
+import 'package:pet_health_tracker/ui/theme/app_theme.dart';
 import 'package:pet_health_tracker/ui/kit/app_chip.dart';
 
 import '../data/test_support.dart';
@@ -52,7 +54,38 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets(
+  void desktopTest(String description, WidgetTesterCallback callback) {
+    testWidgets(
+      description,
+      callback,
+      variant: TargetPlatformVariant(<TargetPlatform>{TargetPlatform.windows}),
+    );
+  }
+
+  testWidgets('mobile Home has no extra summary at phone or tablet widths', (
+    WidgetTester tester,
+  ) async {
+    await boot(tester);
+    for (final double width in <double>[390, 768, 1280]) {
+      await resize(tester, width);
+      expect(find.byType(AppShellBar), findsOneWidget);
+      expect(find.byType(WorkspaceBar), findsNothing);
+      expect(find.byType(DashboardSummary), findsNothing);
+      expect(byKey('pet-card-9001'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
+
+    await resize(tester, 390, height: 650);
+    final Finder homeList = find.byKey(
+      const PageStorageKey<String>('home-scroll'),
+    );
+    await tester.fling(homeList, const Offset(0, -700), 2000);
+    await tester.pumpAndSettle();
+    expect(find.text('HOUSEHOLD SUMMARY'), findsNothing);
+    expect(find.byType(DashboardSummary), findsNothing);
+  });
+
+  desktopTest(
     'shell reflows at both breakpoints and keeps the journal filter',
     (WidgetTester tester) async {
       await boot(tester);
@@ -93,22 +126,80 @@ void main() {
         1200,
       ]) {
         await resize(tester, width);
+        expect(find.byType(AppShellBar), findsNothing);
+        expect(find.byType(WorkspaceBar), findsOneWidget);
         expect(
-          find.byType(AppShellBar),
-          width < AppLayout.tablet ? findsOneWidget : findsNothing,
+          byKey('open-desktop-navigation'),
+          width < AppLayout.sidebarMinWidth ? findsOneWidget : findsNothing,
         );
         expect(
           byKey('toggle-sidebar'),
-          width >= AppLayout.desktop ? findsOneWidget : findsNothing,
+          width >= AppLayout.sidebarToggleMinWidth
+              ? findsOneWidget
+              : findsNothing,
         );
         expect(tester.widget<AppChip>(bella).selected, isTrue);
         expect(byKey('journal-list'), findsOneWidget);
         expect(tester.takeException(), isNull, reason: 'width $width');
       }
+
+      await resize(tester, 390);
+      await tester.tap(byKey('open-desktop-navigation'));
+      await tester.pumpAndSettle();
+      expect(find.byType(Drawer).hitTestable(), findsOneWidget);
+      await tester.tap(byKey('tab-appointments'));
+      await settleAsync(tester);
+      await tester.pumpAndSettle();
+      expect(byKey('appointments-list'), findsOneWidget);
+      expect(find.byType(Drawer).hitTestable(), findsNothing);
+      await tester.tap(byKey('open-dashboard'));
+      await settleAsync(tester);
+      await tester.pumpAndSettle();
+      expect(find.byType(DashboardSummary), findsOneWidget);
     },
   );
 
-  testWidgets('keyboard navigation and booking dialog survive a live resize', (
+  desktopTest('scheduled badges are aligned in a narrow appointment view', (
+    WidgetTester tester,
+  ) async {
+    await boot(tester);
+    await resize(tester, 492);
+    await chord(tester, LogicalKeyboardKey.altLeft, LogicalKeyboardKey.digit3);
+    await settleAsync(tester);
+    await tester.pumpAndSettle();
+    final Finder card = byKey('appointment-card-9301');
+    final Finder badge = find.descendant(
+      of: card,
+      matching: find.byType(AppChip),
+    );
+    expect(tester.getCenter(badge).dy, closeTo(tester.getCenter(card).dy, 1));
+
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+    final Finder dialog = find.byType(Dialog);
+    final Finder label = find.descendant(
+      of: dialog,
+      matching: find.text('VISIT'),
+    );
+    final Finder dialogBadge = find.descendant(
+      of: dialog,
+      matching: find.byType(AppChip),
+    );
+    expect(
+      tester.getCenter(dialogBadge).dy,
+      closeTo(tester.getCenter(label).dy, 1),
+    );
+    final Finder dialogSurface = find
+        .descendant(of: dialog, matching: find.byType(Material))
+        .first;
+    expect(
+      tester.getTopLeft(dialogBadge).dy - tester.getTopLeft(dialogSurface).dy,
+      AppSpacing.lg,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  desktopTest('keyboard navigation and booking dialog survive a live resize', (
     WidgetTester tester,
   ) async {
     await boot(tester);
@@ -149,29 +240,28 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets(
-    'pet history is visible on wide windows and keeps the mobile sheet',
-    (WidgetTester tester) async {
-      await boot(tester);
-      await tester.tap(byKey('pet-card-9001'));
-      await settleAsync(tester);
-      await tester.pumpAndSettle();
-      expect(byKey('vaccines-section'), findsOneWidget);
-      expect(byKey('medical-history-section'), findsOneWidget);
-      expect(byKey('pet-swipe-hint'), findsNothing);
+  desktopTest('desktop pet history stays visible when the window narrows', (
+    WidgetTester tester,
+  ) async {
+    await boot(tester);
+    await tester.tap(byKey('pet-card-9001'));
+    await settleAsync(tester);
+    await tester.pumpAndSettle();
+    expect(byKey('vaccines-section'), findsOneWidget);
+    expect(byKey('medical-history-section'), findsOneWidget);
+    expect(byKey('pet-swipe-hint'), findsNothing);
 
-      await resize(tester, 390);
-      expect(byKey('pet-sheet'), findsOneWidget);
-      expect(byKey('pet-swipe-hint'), findsOneWidget);
-      await tester.tap(byKey('pet-back'));
-      await settleAsync(tester);
-      await tester.pumpAndSettle();
-      expect(byKey('pet-card-9001'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    await resize(tester, 390);
+    expect(byKey('pet-sheet'), findsNothing);
+    expect(byKey('medical-history-section'), findsOneWidget);
+    await tester.tap(byKey('pet-back'));
+    await settleAsync(tester);
+    await tester.pumpAndSettle();
+    expect(byKey('pet-card-9001'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
-  testWidgets('a short, wide pet deep link can return to Home', (
+  desktopTest('a short, wide pet deep link can return to Home', (
     WidgetTester tester,
   ) async {
     await boot(
@@ -187,7 +277,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('dashboard metrics group into four or two columns', (
+  desktopTest('dashboard metrics group into four or two columns', (
     WidgetTester tester,
   ) async {
     await boot(tester);
@@ -206,7 +296,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('dashboard fits the requested windows without layout errors', (
+  desktopTest('dashboard fits the requested windows without layout errors', (
     WidgetTester tester,
   ) async {
     await boot(tester);
@@ -225,14 +315,12 @@ void main() {
     for (final Size window in windows) {
       await resize(tester, window.width, height: window.height);
       expect(tester.takeException(), isNull, reason: '$window');
-      expect(
-        find.byType(WorkspaceBar),
-        window.width >= AppLayout.tablet ? findsOneWidget : findsNothing,
-      );
+      expect(find.byType(WorkspaceBar), findsOneWidget);
+      expect(find.byType(AppShellBar), findsNothing);
     }
   });
 
-  testWidgets('desktop quick log writes to the selected pet', (
+  desktopTest('desktop quick log writes to the selected pet', (
     WidgetTester tester,
   ) async {
     await boot(tester);
@@ -254,7 +342,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('profile settings and owner form use desktop columns', (
+  desktopTest('profile settings and owner form use desktop columns', (
     WidgetTester tester,
   ) async {
     await boot(tester);

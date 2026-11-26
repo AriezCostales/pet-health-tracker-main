@@ -12,7 +12,7 @@ Future<T?> showAppSheet<T>(
   WidgetBuilder builder, {
   bool isScrollControlled = true,
 }) {
-  if (AppLayout.isWide(context)) {
+  if (AppLayout.usesDesktopLayout(context)) {
     return showDialog<T>(
       context: context,
       useRootNavigator: false,
@@ -62,7 +62,7 @@ class AppSheetBody extends StatelessWidget {
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom)
           .add(
             padding ??
-                (AppLayout.isWide(context)
+                (AppLayout.usesDesktopLayout(context)
                     ? const EdgeInsets.all(AppSpacing.xl)
                     : const EdgeInsets.fromLTRB(20, 4, 20, 24)),
           ),

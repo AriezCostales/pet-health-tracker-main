@@ -5,18 +5,24 @@ import '../theme/app_theme.dart';
 /// Window breakpoints in logical pixels. Content columns also check their
 /// local constraints because the navigation takes up some of the window.
 abstract final class AppLayout {
-  static const double tablet = 640;
-  static const double desktop = 1024;
+  static const double sidebarMinWidth = 640;
+  static const double sidebarToggleMinWidth = 1024;
   static const double expandedSidebar = 1280;
   static const double largeDesktop = 1536;
   static const double contentMaxWidth = 1380;
   static const double columnMinWidth = 320;
 
-  static bool isWide(BuildContext context) =>
-      MediaQuery.sizeOf(context).width >= tablet;
-
-  static bool isDesktop(BuildContext context) =>
-      MediaQuery.sizeOf(context).width >= desktop;
+  /// On web, Flutter reports the browser's host platform. A desktop
+  /// browser in a narrow window still uses the desktop layout.
+  static bool usesDesktopLayout(BuildContext context) =>
+      switch (Theme.of(context).platform) {
+        TargetPlatform.android ||
+        TargetPlatform.iOS ||
+        TargetPlatform.fuchsia => false,
+        TargetPlatform.linux ||
+        TargetPlatform.macOS ||
+        TargetPlatform.windows => true,
+      };
 
   static double pageGutter(BuildContext context) {
     final double width = MediaQuery.sizeOf(context).width;
@@ -44,7 +50,9 @@ class PageContent extends StatelessWidget {
     return Center(
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: AppLayout.isWide(context) ? maxWidth : double.infinity,
+          maxWidth: AppLayout.usesDesktopLayout(context)
+              ? maxWidth
+              : double.infinity,
         ),
         child: SizedBox.expand(child: child),
       ),

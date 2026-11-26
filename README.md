@@ -7,7 +7,7 @@ database on the device is the only source of truth.
 
 | Destination | What it does |
 | --- | --- |
-| **Home / Dashboard** | Household summary, quick log, pets, vaccination attention, upcoming visits, and recent journal entries. Phones start with the swipeable pet cards and keep the summary lower on the page. |
+| **Home / Dashboard** | Household summary, quick log, pets, vaccination attention, upcoming visits, and recent journal entries. On phones, the swipeable pet cards, quick log, and recent activity serve as the household summary. |
 | **Journal** | The household feed, newest first, grouped Today / Yesterday / full date, with a per-pet filter. Tap a row to edit its time, note and duration, or delete it. |
 | **Appointments** | Upcoming / Past toggle with a per-pet filter. Tap a visit to complete it, cancel it with a reason, mark a no-show (only after the scheduled time), reschedule it, or jump to that pet's filtered list. |
 | **Profile** | Owner details (editable), the pet list, and four settings rows: due-soon window, weight unit, the sample-data toggle and Reset household. |

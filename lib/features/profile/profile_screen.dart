@@ -180,7 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _content(Owner owner) {
     final List<Pet> pets = _controller.pets;
     final AppSettings settings = _controller.settings;
-    final bool wide = AppLayout.isWide(context);
+    final bool wide = AppLayout.usesDesktopLayout(context);
     final Widget ownerBlock = _OwnerBlock(
       owner: owner,
       onEdit: () => _editOwner(owner),

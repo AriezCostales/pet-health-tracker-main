@@ -12,32 +12,19 @@
 
 ## Window behavior
 
-| Logical width | Navigation | Content and overlays |
-| --- | --- | --- |
-| Below 640 px | Existing bottom bar and raised centre action | Existing phone pager, pull to refresh, sliding pet photo sheet, and bottom-sheet forms |
-| 640–1023 px | Compact icon rail, destination title, and Quick actions | Constrained pages with columns where the content area permits, directly visible pet history, and centered dialogs |
-| 1024–1279 px | Compact rail by default, with a toggle for labels | Dashboard metrics and panels respond to the space around the rail |
-| 1280–1535 px | Labeled sidebar by default, with a collapse toggle | Four dashboard metrics when space permits, appointment grid, grouped journal, and Profile panels |
-| 1536 px and above | Labeled sidebar by default, with a collapse toggle | Wider gutters and a capped content area |
+Desktop builds and desktop browsers keep the desktop dashboard at every width.
+The sidebar compacts as space shrinks and moves into a toolbar drawer below
+640 logical pixels. Android and iOS use mobile Home with bottom navigation.
+The underlying routes, controllers, and local SQLite storage are shared.
 
-`AppLayout` reads the logical viewport from `MediaQuery`. `PageContent` caps
-the page width and `AdaptiveColumns` uses `LayoutBuilder` to calculate how many
-sections fit inside the space left by the sidebar. The shell keeps its navigator
-in the same widget position when the rail or bottom bar changes, so route
-selection and feature state survive a resize. A form uses the presentation
-chosen when it opens. It remains open and reflows its fields as space changes,
-preserving the draft. The next form uses the current width.
+The desktop Home quick-log panel logs against the selected pet. Use its
+edit-note menu to open the full journal form. Appointments and Journal expose
+refresh controls for mouse users. The desktop pet detail shows vaccines and
+clinical notes in scrollable panels.
 
-On wider layouts, Home logs against the pet selected in the **Quick log**
-panel. The edit-note icon opens a menu for logging one of the quick-log
-categories with details. Appointments and Journal expose refresh controls for
-mouse users. On pet detail, vaccines and clinical notes are directly visible in
-scrollable panels and use the same add forms as on mobile.
-
-On desktop, use **Alt+1–4** to switch sections and **Ctrl+N** or **Cmd+N** to
-open Quick actions. Use **Tab** and **Shift+Tab** to move between controls,
-**Enter** or **Space** to activate a focused button, and **Esc** to dismiss a
-dialog. A browser or the operating system can intercept its own shortcuts.
+The router retains the selected section and form inputs when a desktop window
+resizes. Desktop forms use dialogs and mobile forms use bottom sheets. See the
+[dashboard redesign](dashboard-redesign.md) for breakpoints and shortcuts.
 
 ## Windows and data
 

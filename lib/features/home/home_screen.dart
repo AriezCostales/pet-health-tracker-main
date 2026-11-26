@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (pets.isEmpty) {
       return null;
     }
-    if (AppLayout.isWide(context)) {
+    if (AppLayout.usesDesktopLayout(context)) {
       return _wideLogPet(pets);
     }
     final int page = _pageIndex.clamp(0, pets.length);
@@ -342,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (dashboard == null) {
               return _HomeStatus(controller: controller);
             }
-            final bool wide = AppLayout.isWide(context);
+            final bool wide = AppLayout.usesDesktopLayout(context);
             return PageContent(
               child: RefreshIndicator(
                 onRefresh: controller.refresh,
@@ -491,20 +491,6 @@ class _HomeScreenState extends State<HomeScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: _recentEntries(dashboard, petNames),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              const SectionLabel('Household summary'),
-              DashboardSummary(
-                dashboard: dashboard,
-                dueSoonDays: _services!.settings.dueSoonWindowDays,
-                compact: true,
-              ),
-            ],
-          ),
         ),
       ],
     ];
@@ -997,7 +983,7 @@ class _HomeStatus extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             const Text('Loading the household…', style: AppTextStyles.caption),
-            if (AppLayout.isWide(context)) ...<Widget>[
+            if (AppLayout.usesDesktopLayout(context)) ...<Widget>[
               const SizedBox(height: AppSpacing.md),
               const SizedBox(width: 260, child: LinearProgressIndicator()),
             ],

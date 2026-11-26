@@ -210,12 +210,16 @@ class WorkspaceBar extends StatelessWidget {
     required this.title,
     required this.onQuickActions,
     this.onToggleNavigation,
+    this.onOpenDrawer,
+    this.onOpenDashboard,
     this.extended = false,
   });
 
   final String title;
   final VoidCallback onQuickActions;
   final VoidCallback? onToggleNavigation;
+  final VoidCallback? onOpenDrawer;
+  final VoidCallback? onOpenDashboard;
   final bool extended;
 
   @override
@@ -234,6 +238,15 @@ class WorkspaceBar extends StatelessWidget {
           ),
           child: Row(
             children: <Widget>[
+              if (onOpenDrawer != null) ...<Widget>[
+                IconButton(
+                  key: const ValueKey<String>('open-desktop-navigation'),
+                  tooltip: 'Open navigation',
+                  onPressed: onOpenDrawer,
+                  icon: const Icon(Icons.menu),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+              ],
               if (onToggleNavigation != null) ...<Widget>[
                 IconButton(
                   key: const ValueKey<String>('toggle-sidebar'),
@@ -256,21 +269,36 @@ class WorkspaceBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Tooltip(
-                message: 'Quick actions (Ctrl+N)',
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(0, 44),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadii.controlRadius,
-                    ),
-                  ),
+              if (onOpenDashboard != null)
+                IconButton(
+                  key: const ValueKey<String>('open-dashboard'),
+                  tooltip: 'Dashboard',
+                  onPressed: onOpenDashboard,
+                  icon: const Icon(Icons.dashboard_outlined),
+                ),
+              if (onOpenDrawer != null)
+                IconButton.filled(
                   key: const ValueKey<String>('centre-action'),
+                  tooltip: 'Quick actions',
                   onPressed: onQuickActions,
                   icon: const Icon(Icons.add, size: 20),
-                  label: const Text('Quick actions'),
+                )
+              else
+                Tooltip(
+                  message: 'Quick actions (Ctrl+N)',
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 44),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppRadii.controlRadius,
+                      ),
+                    ),
+                    key: const ValueKey<String>('centre-action'),
+                    onPressed: onQuickActions,
+                    icon: const Icon(Icons.add, size: 20),
+                    label: const Text('Quick actions'),
+                  ),
                 ),
-              ),
             ],
           ),
         ),

@@ -98,12 +98,15 @@ class _AppShellState extends State<AppShell>
 
   @override
   Widget build(BuildContext context) {
-    final bool wide = AppLayout.isWide(context);
-    final bool desktop = AppLayout.isDesktop(context);
+    final bool desktop = AppLayout.usesDesktopLayout(context);
+    final double width = MediaQuery.sizeOf(context).width;
+    final bool showSidebar = desktop && width >= AppLayout.sidebarMinWidth;
+    final bool useDrawer = desktop && !showSidebar;
+    final bool canToggleSidebar =
+        desktop && width >= AppLayout.sidebarToggleMinWidth;
     final bool extended =
-        desktop &&
-        (_sidebarExpanded ??
-            MediaQuery.sizeOf(context).width >= AppLayout.expandedSidebar);
+        canToggleSidebar &&
+        (_sidebarExpanded ?? width >= AppLayout.expandedSidebar);
     final bool reduceMotion = MediaQuery.disableAnimationsOf(context);
     final int selected = widget.navigationShell.currentIndex;
 
@@ -118,7 +121,7 @@ class _AppShellState extends State<AppShell>
       },
       child: CallbackShortcuts(
         bindings: <ShortcutActivator, VoidCallback>{
-          if (wide) ...<ShortcutActivator, VoidCallback>{
+          if (desktop) ...<ShortcutActivator, VoidCallback>{
             const SingleActivator(LogicalKeyboardKey.digit1, alt: true): () =>
                 _select(0),
             const SingleActivator(LogicalKeyboardKey.digit2, alt: true): () =>
@@ -135,27 +138,45 @@ class _AppShellState extends State<AppShell>
         },
         child: FocusTraversalGroup(
           child: Focus(
-            autofocus: wide,
+            autofocus: desktop,
             child: Scaffold(
+              drawer: useDrawer
+                  ? Drawer(
+                      width: WideNavigation.expandedWidth,
+                      backgroundColor: AppColors.paper,
+                      child: SafeArea(
+                        child: Builder(
+                          builder: (BuildContext drawerContext) =>
+                              WideNavigation(
+                                currentIndex: selected,
+                                onSelect: (int index) {
+                                  Scaffold.of(drawerContext).closeDrawer();
+                                  _select(index);
+                                },
+                              ),
+                        ),
+                      ),
+                    )
+                  : null,
               body: SafeArea(
-                top: wide,
-                bottom: wide,
-                left: wide,
-                right: wide,
+                top: desktop,
+                bottom: desktop,
+                left: desktop,
+                right: desktop,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     AnimatedContainer(
-                      duration: wide && !reduceMotion
+                      duration: showSidebar && !reduceMotion
                           ? AppMotion.panel
                           : Duration.zero,
                       curve: Curves.easeOutCubic,
-                      width: wide
+                      width: showSidebar
                           ? (extended
                                 ? WideNavigation.expandedWidth
                                 : WideNavigation.compactWidth)
                           : 0,
-                      child: wide
+                      child: showSidebar
                           ? WideNavigation(
                               currentIndex: selected,
                               onSelect: _select,
@@ -165,18 +186,27 @@ class _AppShellState extends State<AppShell>
                     Expanded(
                       child: Column(
                         children: <Widget>[
-                          if (wide)
-                            WorkspaceBar(
-                              title: selected == AppShellSelection.home
-                                  ? 'Dashboard'
-                                  : shellDestinations[selected].label,
-                              extended: extended,
-                              onQuickActions: quickActions,
-                              onToggleNavigation: desktop
-                                  ? () => setState(
-                                      () => _sidebarExpanded = !extended,
-                                    )
-                                  : null,
+                          if (desktop)
+                            Builder(
+                              builder: (BuildContext barContext) =>
+                                  WorkspaceBar(
+                                    title: selected == AppShellSelection.home
+                                        ? 'Dashboard'
+                                        : shellDestinations[selected].label,
+                                    extended: extended,
+                                    onQuickActions: quickActions,
+                                    onOpenDashboard: useDrawer
+                                        ? () => _select(AppShellSelection.home)
+                                        : null,
+                                    onOpenDrawer: useDrawer
+                                        ? Scaffold.of(barContext).openDrawer
+                                        : null,
+                                    onToggleNavigation: canToggleSidebar
+                                        ? () => setState(
+                                            () => _sidebarExpanded = !extended,
+                                          )
+                                        : null,
+                                  ),
                             )
                           else
                             const SizedBox.shrink(),
@@ -195,7 +225,7 @@ class _AppShellState extends State<AppShell>
                   ],
                 ),
               ),
-              bottomNavigationBar: wide
+              bottomNavigationBar: desktop
                   ? null
                   : AppShellBar(
                       currentIndex: selected,

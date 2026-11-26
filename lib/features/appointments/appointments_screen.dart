@@ -109,7 +109,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   @override
   Widget build(BuildContext context) {
     final AppointmentsController controller = _controller!;
-    final bool wide = AppLayout.isWide(context);
+    final bool wide = AppLayout.usesDesktopLayout(context);
     final double gutter = wide ? AppLayout.pageGutter(context) : AppSpacing.xl;
     return Scaffold(
       appBar: wide && AppShellSelection.maybeOf(context) != null
@@ -212,7 +212,7 @@ class _PetFilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double gutter = AppLayout.isWide(context)
+    final double gutter = AppLayout.usesDesktopLayout(context)
         ? AppLayout.pageGutter(context)
         : AppSpacing.xl;
     return SingleChildScrollView(
@@ -276,7 +276,7 @@ class _AppointmentsBody extends StatelessWidget {
             : 'Completed and closed visits land here.',
       );
     }
-    final bool wide = AppLayout.isWide(context);
+    final bool wide = AppLayout.usesDesktopLayout(context);
     Widget cardAt(int index) {
       final Appointment appointment = controller.appointments[index];
       return _AppointmentCard(
@@ -353,7 +353,6 @@ class _AppointmentCard extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           _DateBlock(appointment: appointment),
           const SizedBox(width: AppSpacing.md),

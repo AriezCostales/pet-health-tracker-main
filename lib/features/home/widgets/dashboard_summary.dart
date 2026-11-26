@@ -10,12 +10,10 @@ class DashboardSummary extends StatelessWidget {
     super.key,
     required this.dashboard,
     required this.dueSoonDays,
-    this.compact = false,
   });
 
   final Dashboard dashboard;
   final int dueSoonDays;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +64,7 @@ class DashboardSummary extends StatelessWidget {
       builder: (BuildContext context, BoxConstraints constraints) {
         const double gap = AppSpacing.md;
         final double scaledText = MediaQuery.textScalerOf(context).scale(1);
-        final double minimumTile =
-            (compact ? 145 : 172) * scaledText.clamp(1.0, 1.45);
+        final double minimumTile = 172 * scaledText.clamp(1.0, 1.45);
         final int columns = switch (constraints.maxWidth) {
           final double width when width >= minimumTile * 4 + gap * 3 => 4,
           final double width when width >= minimumTile * 2 + gap => 2,
